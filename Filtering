@@ -1,0 +1,66 @@
+Continuous Steel Casting Sensor Data Analysis
+
+
+#Background#
+In continuous casting processes, the press-down system plays a critical role in ensuring product quality and stability. 
+The sensors attached to the press-down mechanism record time-series signals that contain valuable information about system dynamics, disturbances, and potential abnormalities. 
+However, raw sensor signals are often noisy and require preprocessing and feature extraction before they can be used for process monitoring, fault diagnosis, or control optimization.
+
+This project provides a MATLAB implementation for analyzing such sensor data. 
+It includes time-domain visualization, frequency-domain analysis using FFT, and waveform feature extraction (peaks, valleys, and average wavelength). 
+These methods help in identifying dominant frequency components, estimating signal periodicity, and extracting features that may later serve as inputs for system identification, predictive modeling, or machine learning algorithms.
+
+
+#Code Description#
+1.Data Import and Time-Domain Analysis
+port_data = Untitled(:, 1);    % Data Reading
+time = (0:(length(port_data)-1))*(1/32768);  % Generating time series
+
+figure;
+plot(time, port_data);         % Plotting the waveform of the raw signal
+title('Port 1 Waveform');
+xlabel('Time (s)');
+ylabel('Amplitude');
+
+2.Frequency-Domain Analysis (FFT)
+Fs = 32768;   % 采样频率
+L = length(port_data); 
+Y = fft(port_data);    
+P2 = abs(Y/L);        
+P1 = P2(1:L/2+1);  
+P1(2:end-1) = 2*P1(2:end-1); 
+f = Fs*(0:(L/2))/L;    
+
+3.Peak and Valley Detection
+[peaks, peak_locs] = findpeaks(port_data);   
+[valleys, valley_locs] = findpeaks(-port_data);
+valleys = -valleys;  
+
+4.Wavelength Estimation
+wavelength = mean(diff(peak_locs));  
+
+5.Output and Visualization
+disp(['Average _wavelength：', num2str(wavelength)]);
+disp(['Spectral _length：', num2str(length(f))]);
+disp(['Maximum _frequency：', num2str(max(f))]);
+
+6.Visualisation: Spectrum + Peak and Valley
+subplot(2,1,1);
+plot(f,P1);   
+title('Unilateral_spectrum');
+xlabel('frequency (Hz)');
+ylabel('amplitude');
+
+subplot(2,1,2);
+plot(port_data);  % raw signal
+hold on;
+plot(peak_locs, peaks, 'r*', 'MarkerSize', 10);   
+plot(valley_locs, valleys, 'g*', 'MarkerSize', 10); 
+hold off;
+title('Signals and peak and valley');
+xlabel('sample');
+ylabel('signal amplitude');
+legend('signal', 'peak', 'valley');
+
+
+
